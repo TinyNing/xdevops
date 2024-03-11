@@ -1,0 +1,60 @@
+pipeline {
+    agent {
+        label 'compile'
+    }
+
+    options {
+        gitLabConnection('gitlab')
+        timestamps ()
+        buildDiscarder(logRotator(numToKeepStr:'50'))
+    }
+
+    stages {
+        stage('downcode') {
+            steps {
+                echo 'A'
+                sh """ env  """
+                sh  """  date  """
+            }
+        }
+        stage('parallel stages') {
+            parallel {
+                stage('buildAPP') {
+                    stages {
+                        stage('build_android') {
+                            steps {
+                                echo 'B'
+                                updateGitlabCommitStatus name: 'build_android', state: 'failed'
+                            }
+                        }
+                        stage('build_ios') {
+                            steps {
+                                echo 'C'
+                                updateGitlabCommitStatus name: 'build_ios', state: 'failed'
+                            }
+                        }
+                        stage('build_hongmeng') {
+                            steps {
+                                echo 'D'
+                                updateGitlabCommitStatus name: 'build_hongmeng', state: 'running'
+                                sleep 6
+                                updateGitlabCommitStatus name: 'build_hongmeng', state: 'running'
+                            }
+                        }
+                    }
+                }
+                stage('build_android_PC') {
+                    steps {
+                        echo 'E'
+                        updateGitlabCommitStatus name: 'build_android_PC', state: 'success'
+                    }
+                }
+            }
+        }
+        stage('F') {
+            steps {
+                echo 'F'
+            }
+        }        
+    }
+}
